@@ -1,0 +1,81 @@
+<header class="view-header compact-header">
+    <h1>⚙️ Налаштування Акаунту</h1>
+</header>
+
+<div class="settings-layout">
+    
+    <div class="card settings-card">
+        <h3 class="card-title">👤 Особисті дані та Контакти</h3>
+        
+        <div class="gold-profile-box">
+            <div class="profile-inner">
+                <span class="profile-crown">👑</span>
+                <div class="profile-info">
+                    <span id="profile-display-nick" class="profile-nick">Завантаження...</span>
+                    <span id="profile-display-id" class="profile-id">ID: ...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-grid-settings">
+            <div class="input-container">
+                <label class="settings-label">Змінити Нікнейм</label>
+                <input type="text" id="settings-new-nick" class="arena-input" placeholder="Введіть новий нік">
+            </div>
+
+            <div class="input-container">
+                <label class="settings-label">Змінити Пароль</label>
+                <input type="password" id="settings-new-pass" class="arena-input" placeholder="********">
+            </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <h4 class="sub-title">📞 Інформація для Зборів (Call List)</h4>
+        
+        <div class="input-container">
+            <label class="settings-label">Номер Телефону (для екстреного зв'язку)</label>
+            <input type="text" id="settings-phone" class="arena-input" placeholder="+380 XX XXX XX XX">
+        </div>
+
+        <div class="input-container">
+            <label class="settings-label">Чим Кріпити? (Ваш тип військ)</label>
+            <input type="text" id="settings-trap" class="arena-input" placeholder="Напр: Піхи + Т5 / Фаланга Луків">
+            <small class="hint-text">Ця інформація буде видна лідерам у списку дозвани.</small>
+        </div>
+
+        <button class="gold-save-btn full-width-btn" onclick="saveProfileSettings()">
+            💾 Зберегти Всі Зміни
+        </button>
+    </div>
+
+    <div class="card settings-card">
+        <h3 class="card-title">⚙️ Додатково</h3>
+        <div class="kvk-options-list">
+            <div class="kvk-control-item">
+                <span class="settings-label-row">🔊 Звукові Сповіщення</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="logout-section">
+        <a href="/logout" class="logout-btn">
+            <span class="skull-icon">💀</span> Вийти з акаунту
+        </a>
+    </div>
+</div>
+
+<script>
+    // Запускаємо, коли вкладка завантажиться
+    setTimeout(() => {
+        if(typeof loadProfileData === 'function') {
+            loadProfileData();
+        } else {
+            console.warn("loadProfileData не знайдено, перевірте js.js");
+        }
+    }, 100);
+</script>

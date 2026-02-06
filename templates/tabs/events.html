@@ -1,0 +1,91 @@
+<header class="view-header">
+    <h1>Події Гільдії</h1>
+</header>
+
+<div class="events-layout">
+    
+    <div class="events-section">
+        <h3 class="events-subtitle">Найближчі Великі Події</h3>
+        <div class="announcements-grid">
+            
+            <div class="announcement-badge kvk-badge">
+                <div class="badge-icon-box">
+                    <span style="font-size: 2.5rem;">⚔️</span>
+                </div>
+                <div class="badge-info">
+                    <span class="badge-title">KVK</span>
+                    <span class="badge-desc">(Війна Королівств)</span>
+                    <div class="badge-time">
+                        <div class="b-date" id="next-kvk-date">--.--.----</div>
+                        <div class="b-clock">18:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="announcement-badge gf-badge">
+                <div class="badge-icon-box">
+                    <span style="font-size: 2.5rem;">📜</span>
+                </div>
+                <div class="badge-info">
+                    <span class="badge-title">GF</span>
+                    <span class="badge-desc">(Гільд Фест)</span>
+                    <div class="badge-time">
+                        <div class="b-date" id="next-gf-date">--.--.----</div>
+                        <div class="b-clock">06:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="announcement-badge ge-badge">
+                <div class="badge-icon-box">
+                    <span style="font-size: 2.5rem;">⛺</span>
+                </div>
+                <div class="badge-info">
+                    <span class="badge-title">GE</span>
+                    <span class="badge-desc">(Експедиція)</span>
+                    <div class="badge-time">
+                        <div class="b-date" id="next-ge-date">--.--.----</div>
+                        <div class="b-clock">00:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="announcement-badge arena-badge">
+                <div class="badge-icon-box">
+                    <span style="font-size: 2.5rem;">🐲</span>
+                </div>
+                <div class="badge-info">
+                    <span class="badge-title">Арена Драконів</span>
+                    <div class="badge-time">
+                        <div class="b-date" id="next-arena-date-event">--.--.----</div>
+                        <div class="b-clock">19:00</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стиль для GE */
+    .ge-badge {
+        background: rgba(255, 152, 0, 0.1);
+        border: 1px solid #ff9800;
+        border-left: 4px solid #ff9800;
+    }
+    .ge-badge .badge-title { color: #ff9800; }
+    
+    /* Сітка */
+    .announcements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 15px;
+    }
+    
+    /* Якщо подій мало, центруємо їх (опціонально) */
+    .events-layout {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+</style>

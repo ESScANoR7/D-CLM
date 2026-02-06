@@ -1,0 +1,44 @@
+<header class="view-header">
+    <h1>Результати Гравця: <span id="display-nick" class="gold-text">...</span></h1>
+</header>
+
+<div class="player-results-wrapper">
+    
+    <div class="stats-blocks-grid">
+        <div class="stat-value-block">
+            <span class="stat-label">⚔️ Загальна Сила</span>
+            <div class="stat-main-number" id="stat-might">0M</div>
+            <div class="stat-diff plus" id="stat-might-diff">+0</div>
+        </div>
+
+        <div class="stat-value-block">
+            <span class="stat-label">💀 Загальні Вбивства</span>
+            <div class="stat-main-number" id="stat-kills">0M</div>
+            <div class="stat-diff plus" id="stat-kills-diff">+0</div>
+        </div>
+
+        <div class="stat-value-block">
+            <span class="stat-label">🏆 Ранги у Гільдії</span>
+            <div class="stat-main-number" style="display: flex; flex-direction: column; gap: 5px; align-items: center;">
+                <div style="font-size: 0.85em;">
+                    <span class="gold-text">Міць:</span> 
+                    <span id="stat-rank">--</span> 
+                    <small class="text-muted">/ <span id="stat-total">--</span></small>
+                </div>
+                <div style="font-size: 0.85em;">
+                    <span style="color: #ff4444;">Кіли:</span> 
+                    <span id="stat-kills-rank">--</span>
+                    <small class="text-muted">/ <span id="stat-total-k">--</span></small>
+                </div>
+            </div>
+            <div class="stat-diff rank" id="stat-percent" style="margin-top: 8px;">Top --%</div>
+        </div>
+    </div>
+
+    <div class="card chart-card" style="margin-top: 20px;">
+        <h3 class="card-title">📈 Динаміка Сили (30 днів)</h3>
+        <div class="chart-container">
+            <canvas id="mightChart"></canvas>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S&V Guild - Вибір ролі</title>
+    <link rel="stylesheet" href="/static/css/css.css">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <img src="/static/img/logo.png" alt="S&V Logo" class="main-logo">
+        </header>
+
+        <div class="selection-wrapper">
+            <div class="choice-side guest-zone">
+                <div class="content">
+                    <a href="/guest_reg" class="game-btn guest-btn">
+                        <span class="btn-text">Гість</span>
+                    </a>
+                    <p class="tagline light-text">Стань союзником!</p>
+                </div>
+            </div>
+
+            <div class="choice-side player-zone">
+                <div class="content">
+                    <a href="javascript:void(0)" class="game-btn player-btn" onclick="toggleLogin(true)">
+                      <span class="btn-text">Гравець</span>
+                    </a>
+                    <p class="tagline dark-text">До бою, Слабоумний!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="login-tablet">
+            <div class="close-tablet" onclick="toggleLogin(false)">✖</div>
+            
+            <div id="auth-container">
+                <h2 class="auth-title" id="modal-title">АВТОРИЗАЦІЯ</h2>
+
+                {% with messages = get_flashed_messages(category_filter=["login_error"]) %}
+                    {% if messages %}
+                        <div class="error-message server-error" style="display:block;">
+                            {{ messages[0] }}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div id="player-auth-error" class="error-message"></div>
+
+                <form class="auth-form" id="mainAuthForm" action="/login" method="POST">
+                    <div class="input-container">
+                        <label>Нікнейм</label>
+                        <div class="lava-input-wrapper">
+                            <input type="text" name="nickname" placeholder="Введіть нік" required>
+                        </div>
+                    </div>
+
+                    <div class="input-container" id="igg-id-field" style="display: none;">
+                        <label>IGG ID</label>
+                        <div class="lava-input-wrapper">
+                            <input type="number" name="igg_id" placeholder="Ваш ID">
+                        </div>
+                    </div>
+
+                    <div class="input-container">
+                        <label>Пароль</label>
+                        <div class="lava-input-wrapper">
+                            <input type="password" name="password" placeholder="********" required>
+                        </div>
+                    </div>
+
+                    <div id="guild-code-field" style="display: none; margin: 15px 0; border: 1px solid #ffd700; padding: 10px; border-radius: 5px;">
+                        <label style="color:#ffd700; font-size: 0.9em;">🔐 Код доступу (у R4/R5)</label>
+                        <input type="text" name="guild_code" placeholder="Введіть код" style="text-align: center; font-weight: bold; letter-spacing: 2px; width: 100%; margin-top: 5px; background: #222; border: none; color: white; padding: 5px;">
+                    </div>
+
+                    <button type="submit" class="auth-submit-btn" id="submit-btn">
+                        <span class="fist-icon">✊</span> УВІЙТИ
+                    </button>
+                </form>
+
+                <button type="button" class="modal-switch-btn" id="switch-auth-btn" onclick="switchAuthMode(true)">
+                    РЕЄСТРАЦІЯ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/js.js"></script>
+</body>
+</html>

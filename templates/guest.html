@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S&V Guild - Гість</title>
+    <link rel="stylesheet" href="/static/css/css.css">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+</head>
+<body class="guest-page-body">
+    
+    <div class="guest-auth-container">
+        <a href="/" class="guest-close-btn">✖</a>
+
+        <div class="guest-frame">
+            <header class="guest-header">
+                <div class="guest-logo-icon">📜</div>
+                <h1 class="guest-title" id="guest-title">РЕЄСТРАЦІЯ ГОСТЯ</h1>
+                <p class="guest-subtitle">Увійдіть до архіву гільдії</p>
+            </header>
+
+            <div id="guest-auth-error" class="error-message"></div>
+
+            <form class="guest-form" id="guestAuthForm" action="/register_guest" method="POST">
+                <div class="guest-input-group">
+                    <label>Ваше Ім'я (Нікнейм)</label>
+                    <div class="input-scroll">
+                        <span class="rune left">ᚱ</span>
+                        <input type="text" name="nickname" class="guest-input" placeholder="Введіть нік" required autocomplete="off">
+                        <span class="rune right">ᚨ</span>
+                    </div>
+                </div>
+
+                <div class="guest-input-group">
+                    <label>Таємний Код (Пароль)</label>
+                    <div class="input-scroll">
+                        <span class="rune left">ᚦ</span>
+                        <input type="password" name="password" class="guest-input" placeholder="********" required>
+                        <span class="rune right">ᛟ</span>
+                    </div>
+                </div>
+
+                <div class="guest-button-wrapper">
+                    <button type="submit" class="guest-submit-btn main-btn">
+                        <span id="btn-label">ЗАРЕЄСТРУВАТИСЬ</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="guest-switch-container">
+                <p class="switch-text">Вже маєте запис?</p>
+                <button type="button" class="guest-submit-btn alt-btn" id="guest-switch-btn" onclick="switchGuestMode(true)">
+                    <span id="switch-btn-label">УВІЙТИ ЯК ГІСТЬ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Перемикання режимів (Вхід / Реєстрація)
+function switchGuestMode(isLogin) {
+    const form = document.getElementById('guestAuthForm');
+    const title = document.getElementById('guest-title');
+    const mainBtnLabel = document.getElementById('btn-label');
+    const switchBtn = document.getElementById('guest-switch-btn');
+    const switchBtnLabel = document.getElementById('switch-btn-label');
+    const errorBox = document.getElementById('guest-auth-error');
+    const switchText = document.querySelector('.switch-text');
+
+    errorBox.style.display = 'none';
+    errorBox.innerText = '';
+
+    if (isLogin) {
+        form.action = "/login";
+        title.innerText = "ВХІД ДЛЯ ГОСТЕЙ";
+        mainBtnLabel.innerText = "УВІЙТИ";
+        switchText.innerText = "Новий гість?";
+        switchBtnLabel.innerText = "ЗАРЕЄСТРУВАТИСЬ";
+        switchBtn.setAttribute('onclick', 'switchGuestMode(false)');
+    } else {
+        form.action = "/register_guest";
+        title.innerText = "РЕЄСТРАЦІЯ ГОСТЯ";
+        mainBtnLabel.innerText = "ЗАРЕЄСТРУВАТИСЬ";
+        switchText.innerText = "Вже маєте запис?";
+        switchBtnLabel.innerText = "УВІЙТИ ЯК ГІСТЬ";
+        switchBtn.setAttribute('onclick', 'switchGuestMode(true)');
+    }
+}
+
+// 2. Обробка відправки форми (Виправлена логіка JSON-редиректу)
+document.getElementById('guestAuthForm').onsubmit = async function(e) {
+    e.preventDefault(); // Завжди зупиняємо стандартну відправку
+    
+    const errorBox = document.getElementById('guest-auth-error');
+    errorBox.style.display = 'none';
+    
+    const submitBtn = document.getElementById('guest-main-btn');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const formData = new FormData(this);
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Повідомляємо серверу, що це AJAX
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Виконуємо редірект, який прислав сервер (dashboard)
+            window.location.href = data.redirect || '/dashboard';
+        } else {
+            // Виводимо помилку (наприклад "Невірний пароль")
+            errorBox.innerText = data.error || "Помилка доступу";
+            errorBox.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Помилка:', error);
+        errorBox.innerText = "Сталася помилка з'єднання.";
+        errorBox.style.display = 'block';
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+};
+    </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<header class="view-header">
+    <h1>⚔️ KVK (Війна Королівств)</h1>
+</header>
+
+<div class="kvk-layout">
+    
+    <div class="card kvk-card">
+        <h3 class="card-title">Готовність до війни</h3>
+        <div class="toggle-group full-width">
+            <label class="toggle-btn">
+                <input type="radio" name="kvk_ready" value="yes" id="kvk-ready-yes">
+                <span class="btn-visual check">✅ Так, буду</span>
+            </label>
+            <label class="toggle-btn">
+                <input type="radio" name="kvk_ready" value="no" id="kvk-ready-no" checked>
+                <span class="btn-visual cross">❌ Ні</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="card kvk-card">
+        <h3 class="card-title">Плани на Виліт</h3>
+        
+        <div class="switch-row">
+            <span>✈️ Лечу на виліт (інше кор):</span>
+            <label class="switch">
+                <input type="checkbox" id="kvk-fly-out">
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div class="switch-row">
+            <span>🏰 Міграція в закрите кор.:</span>
+            <label class="switch">
+                <input type="checkbox" id="kvk-mig-closed">
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label>№ Королівства (ціль):</label>
+            <input type="number" id="kvk-kingdom-num" class="arena-input" placeholder="Наприклад: 1254">
+        </div>
+    </div>
+
+    <div class="card kvk-card">
+        <h3 class="card-title">Бойові Стати (%)</h3>
+        <div class="stats-inputs-grid">
+            <div class="s-input">
+                <label>Піхота ATK</label>
+                <input type="number" id="kvk-inf" class="arena-input" placeholder="0">
+            </div>
+            <div class="s-input">
+                <label>Луки ATK</label>
+                <input type="number" id="kvk-rng" class="arena-input" placeholder="0">
+            </div>
+            <div class="s-input">
+                <label>Кавалерія ATK</label>
+                <input type="number" id="kvk-cav" class="arena-input" placeholder="0">
+            </div>
+            <div class="s-input full-width-grid">
+                <label>ATK Армії</label>
+                <input type="number" id="kvk-army-atk" class="arena-input" placeholder="0">
+            </div>
+            <div class="s-input full-width-grid">
+                <label>ОЖ Армії (HP)</label>
+                <input type="number" id="kvk-army-hp" class="arena-input" placeholder="0">
+            </div>
+        </div>
+    </div>
+
+    <div class="card kvk-card">
+        <h3 class="card-title">Фамільяр</h3>
+        <div class="switch-row">
+            <div class="fam-info">
+                <span class="fam-icon-emoji">🐰</span>
+                <span>Є Кролик (Blackwing)?</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="kvk-rabbit">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+
+    <button class="war-save-btn" onclick="saveKvkData()">🩸 Зберегти Дані КВК</button>
+</div>

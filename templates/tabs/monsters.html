@@ -1,0 +1,69 @@
+<div class="monster-scroll-wrapper">
+    <header class="view-header">
+        <h1>👹 Статистика Полювання</h1>
+    </header>
+
+    <div class="week-selector">
+        <button class="week-btn active" onclick="loadMonsterStats(false); switchActiveWeek(this)">Поточний тиждень</button>
+        <button class="week-btn" onclick="loadMonsterStats(true); switchActiveWeek(this)">Минулий тиждень</button>
+    </div>
+
+    <div class="monster-top-row">
+        <div class="card m-card points-style">
+            <div class="m-icon">💀</div>
+            <div class="m-label">Очки Полювання</div>
+            <div class="m-value" id="m-total-points">0</div>
+        </div>
+
+        <div class="card m-card kills-style">
+            <div class="m-icon">🏆</div>
+            <div class="m-label">Всього вбито (Lvl 1-5)</div>
+            <div class="m-value" id="m-total-kills">0</div>
+            <div class="m-sub" id="kill-status"></div>
+        </div>
+    </div>
+
+    <div class="card levels-card">
+        <h3 class="card-title">Тижнева Розбивка по Рівнях</h3>
+        <div class="levels-container">
+            <div class="lvl-box l1">
+                <div class="lvl-head">😈</div>
+                <span>Lvl 1</span>
+                <div class="lvl-num" id="m-lvl1">0</div>
+            </div>
+            <div class="lvl-box l2">
+                <div class="lvl-head">👹</div>
+                <span>Lvl 2</span>
+                <div class="lvl-num" id="m-lvl2">0</div>
+            </div>
+            <div class="lvl-box l3">
+                <div class="lvl-head">👾</div>
+                <span>Lvl 3</span>
+                <div class="lvl-num" id="m-lvl3">0</div>
+            </div>
+            <div class="lvl-box l4">
+                <div class="lvl-head">🐲</div>
+                <span>Lvl 4</span>
+                <div class="lvl-num" id="m-lvl4">0</div>
+            </div>
+            <div class="lvl-box l5">
+                <div class="lvl-head">👑</div>
+                <span>Lvl 5</span>
+                <div class="lvl-num" id="m-lvl5">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card m-card debt-style">
+        <div class="m-icon">💀</div>
+        <div class="m-label">Поточний Борг (Lvl 2)</div>
+        <div class="m-value debt-text" id="monster-debt-display">0</div>
+    </div>
+</div>
+
+<script>
+    function switchActiveWeek(btn) {
+        document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>

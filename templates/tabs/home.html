@@ -1,0 +1,65 @@
+<header class="view-header">
+    <h1>Командний Центр Гільдії</h1>
+</header>
+
+<section class="dashboard-grid">
+    <div class="card welcome-card">
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h2>Вітаємо, <span id="home-nickname" class="gold-text">...</span>!</h2>
+                <div class="rank-box">
+                    <span class="rank-label">Ранг:</span>
+                    <span id="home-rank" class="rank-badge">...</span>
+                </div>
+            </div>
+            <div class="status-box" id="home-status-box">
+                <div class="loader">Перевірка...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card event-timer-card">
+        <div class="timer-row">
+            <div class="timer-section">
+                <h3 class="timer-title">⏳ Арена Драконів</h3>
+                <div id="countdown-arena" class="timer-display arena-color">00д 00г 00хв</div>
+                <div class="event-date-label">📅 <span id="event-date-display">--.--.----</span></div>
+            </div>
+            
+            <div class="timer-divider-vert"></div>
+
+            <div class="timer-section">
+                <h3 class="timer-title">⚔️ Битва Королівств</h3>
+                <div id="countdown-kvk" class="timer-display kvk-color">00д 00г 00хв</div>
+                <div class="event-date-label">📅 <span id="date-kvk">--.--.----</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="info-grid">
+    <div class="card announcement-card">
+        <div class="card-header-flex">
+            <div class="card-icon">📜</div>
+            <h3>Оголошення Лідера</h3>
+        </div>
+        <div class="scroll-content">
+            <p id="home-announcement">Завантаження повідомлення...</p>
+        </div>
+    </div>
+
+    <div class="card rule-card">
+        <div class="rule-icon">🐲</div>
+        <div class="rule-content">
+            <h4>Норма Монстрів</h4>
+            <p class="rule-value" id="home-hunt-rule">56 балів</p>
+            <small class="sub-text">на тиждень</small>
+        </div>
+        <div class="rule-details">
+            <span>Lvl 2 = 1 бал</span>
+             <span>Lvl 3 = 3 бал</span>
+             <span>Lvl 4 = 8 бал</span>
+            <span>Lvl 5 = 8 балів</span>
+        </div>
+    </div>
+</section>

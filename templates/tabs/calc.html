@@ -1,0 +1,227 @@
+<div class="game-calc-container">
+    <header class="view-header compact-header">
+        <h1>⚔️ Військовий Калькулятор</h1>
+    </header>
+
+    <div class="tabs-wrapper">
+        <button class="tab-btn active" onclick="switchCalcTab('train', this)">🛡️ Т1-Т4</button>
+        <button class="tab-btn" onclick="switchCalcTab('t5', this)">🌕 Т5 (Цех)</button>
+        <button class="tab-btn" onclick="switchCalcTab('speed', this)">⚡ Сумка</button>
+        <button class="tab-btn" onclick="switchCalcTab('old', this)">🔄 Конверт</button>
+    </div>
+
+    <div id="calc-train" class="calc-content" style="display: block;">
+        <div class="game-panel">
+            <h3 class="panel-head">Казарма (Т1-Т4)</h3>
+            <div class="grid-inputs">
+                <div class="input-wrap">
+                    <label>Кількість</label>
+                    <input type="number" id="train-amount" class="arena-input" placeholder="0">
+                </div>
+                <div class="input-wrap">
+                    <label>Швидкість %</label>
+                    <input type="number" id="train-speed" class="arena-input" placeholder="350">
+                </div>
+            </div>
+            <div class="control-section">
+                <label>Рівень</label>
+                <div class="tier-grid" id="tier-group-train">
+                    <button class="tier-select" data-time="15" onclick="selectTier(this, 'train')">T1</button>
+                    <button class="tier-select" data-time="30" onclick="selectTier(this, 'train')">T2</button>
+                    <button class="tier-select" data-time="60" onclick="selectTier(this, 'train')">T3</button>
+                    <button class="tier-select active" data-time="120" onclick="selectTier(this, 'train')">T4</button>
+                </div>
+            </div>
+            <div class="result-bar">
+                <span class="res-label">Час:</span>
+                <span id="train-result" class="res-value">0д 0г 0хв</span>
+            </div>
+            <div class="actions-group">
+                <button class="main-action-btn" onclick="calculateTraining()">РОЗРАХУВАТИ</button>
+                <button class="reset-icon-btn" onclick="resetCalc('train')">🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calc-t5" class="calc-content" style="display: none;">
+        <div class="game-panel t5-panel">
+            <h3 class="panel-head blue-head">Місячний Цех (Craft T5)</h3>
+            
+            <div class="t5-mode-switch">
+                <button class="mode-btn active" onclick="toggleT5SubMode('speed', this)">⏳ За прискори</button>
+                <button class="mode-btn" onclick="toggleT5SubMode('gems', this)">💎 За Сапфіри</button>
+            </div>
+
+            <div class="grid-inputs">
+                <div class="input-wrap">
+                    <label>Кількість Т5</label>
+                    <input type="number" id="t5-amount" class="arena-input blue-focus" placeholder="0">
+                </div>
+                <div class="input-wrap">
+                    <label>Швидкість %</label>
+                    <input type="number" id="t5-speed" class="arena-input blue-focus" placeholder="104">
+                </div>
+            </div>
+
+            <div id="t5-sub-speed" class="t5-sub-content">
+                <div class="result-bar blue-border">
+                    <span class="res-label">Потрібно часу:</span>
+                    <span id="t5-time-result" class="res-value blue-val">0д 0г 0хв</span>
+                </div>
+                
+                <div class="rss-table" id="t5-rss-block" style="display:none;">
+                    <div class="rss-row lunite"><span>🌕 Луніт</span> <b id="t5-lunite">0</b></div>
+                    <div class="rss-row"><span>🌾 Їжа</span> <b id="t5-food">0</b></div>
+                    <div class="rss-row"><span>🪨 Камінь</span> <b id="t5-stone">0</b></div>
+                    <div class="rss-row"><span>🪵 Дерево</span> <b id="t5-wood">0</b></div>
+                    <div class="rss-row"><span>💎 Руда</span> <b id="t5-ore">0</b></div>
+                    <div class="rss-row gold"><span>💰 Золото</span> <b id="t5-gold">0</b></div>
+                </div>
+                
+                <div class="actions-group">
+                    <button class="main-action-btn blue-btn" onclick="calculateT5Rss()">РОЗРАХУВАТИ</button>
+                    <button class="reset-icon-btn" onclick="resetCalc('t5')">🗑️</button>
+                </div>
+            </div>
+
+            <div id="t5-sub-gems" class="t5-sub-content" style="display: none;">
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="t5-has-lunite" onchange="calculateT5Gems()">
+                        <span class="checkmark"></span>
+                        У мене вже є Луніт (плачу лише за час)
+                    </label>
+                </div>
+
+                <div class="result-bar gem-bar">
+                    <span class="res-label">Ціна:</span>
+                    <span id="t5-gem-result" class="res-value gem-text">0 💎</span>
+                </div>
+
+                <div class="gem-details" id="t5-gem-details" style="display:none;">
+                    <div class="detail-row"><span>⏳ За час:</span> <b id="gem-time-cost">0</b></div>
+                    <div class="detail-row"><span>🌕 За Луніт:</span> <b id="gem-lunite-cost">0</b></div>
+                </div>
+
+                <div class="actions-group">
+                    <button class="main-action-btn gem-btn" onclick="calculateT5Gems()">РОЗРАХУВАТИ (САПФІРИ)</button>
+                    <button class="reset-icon-btn" onclick="resetCalc('t5')">🗑️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="calc-speed" class="calc-content" style="display: none;">
+        <div class="game-panel">
+            <h3 class="panel-head">Вміст Сумки</h3>
+            <div class="result-bar sticky">
+                <span class="res-label">Разом:</span>
+                <span id="total-speed-time" class="res-value">0д 0г 0хв</span>
+            </div>
+            <div class="bag-grid" id="speedup-inputs">
+                <div class="bag-item"><span>1 хв</span><input type="number" data-mins="1" class="bag-input"></div>
+                <div class="bag-item"><span>5 хв</span><input type="number" data-mins="5" class="bag-input"></div>
+                <div class="bag-item"><span>10 хв</span><input type="number" data-mins="10" class="bag-input"></div>
+                <div class="bag-item"><span>15 хв</span><input type="number" data-mins="15" class="bag-input"></div>
+                <div class="bag-item"><span>30 хв</span><input type="number" data-mins="30" class="bag-input"></div>
+                <div class="bag-item"><span>60 хв</span><input type="number" data-mins="60" class="bag-input"></div>
+                <div class="bag-item blue"><span>3 год</span><input type="number" data-mins="180" class="bag-input"></div>
+                <div class="bag-item blue"><span>8 год</span><input type="number" data-mins="480" class="bag-input"></div>
+                <div class="bag-item blue"><span>15 год</span><input type="number" data-mins="900" class="bag-input"></div>
+                <div class="bag-item blue"><span>24 год</span><input type="number" data-mins="1440" class="bag-input"></div>
+                <div class="bag-item gold"><span>3 дн</span><input type="number" data-mins="4320" class="bag-input"></div>
+                <div class="bag-item gold"><span>7 дн</span><input type="number" data-mins="10080" class="bag-input"></div>
+                <div class="bag-item gold"><span>30 дн</span><input type="number" data-mins="43200" class="bag-input"></div>
+            </div>
+            <div class="actions-group">
+                <button class="main-action-btn" onclick="calculateSpeedTime()">РАХУВАТИ</button>
+                <button class="reset-icon-btn" onclick="resetBag()">🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calc-old" class="calc-content" style="display: none;">
+        <div class="game-panel">
+            <h3 class="panel-head">Дні ➝ Армія (Т1-Т4)</h3>
+            <div class="grid-inputs three">
+                <div class="input-wrap"><label>Днів</label><input type="number" id="main-days" class="arena-input" placeholder="30"></div>
+                <div class="input-wrap"><label>Швидкість %</label><input type="number" id="main-speed" class="arena-input" placeholder="350"></div>
+                <div class="input-wrap"><label>Субсидія %</label><input type="number" id="main-subsidy" class="arena-input" placeholder="0"></div>
+            </div>
+            
+            <div class="control-section">
+                <label>Рівень</label>
+                <div class="tier-grid" id="tier-group-old">
+                    <button class="tier-select" data-tier="T1" data-time="15" data-cost="50,50,50,50,0" onclick="selectTier(this, 'old')">T1</button>
+                    <button class="tier-select" data-tier="T2" data-time="30" data-cost="100,100,100,100,0" onclick="selectTier(this, 'old')">T2</button>
+                    <button class="tier-select" data-tier="T3" data-time="60" data-cost="250,250,250,250,10" onclick="selectTier(this, 'old')">T3</button>
+                    <button class="tier-select active" data-tier="T4" data-time="120" data-cost="1000,1000,1000,1000,500" onclick="selectTier(this, 'old')">T4</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <label>Тип військ</label>
+                <div class="tier-grid" id="type-group">
+                    <button class="tier-select active" onclick="selectType(this)">Піхи</button>
+                    <button class="tier-select" onclick="selectType(this)">Луки</button>
+                    <button class="tier-select" onclick="selectType(this)">Коні</button>
+                    <button class="tier-select" onclick="selectType(this)">Осада</button>
+                </div>
+            </div>
+
+            <div class="big-result">
+                <span>Вийде військ:</span>
+                <div id="res-units" class="highlight">0</div>
+            </div>
+
+            <div class="rss-table" id="res-rss-block" style="display:none;">
+                <div class="rss-row"><span>🌾 Їжа</span> <b id="res-food">0</b></div>
+                <div class="rss-row"><span>🪨 Камінь</span> <b id="res-stone">0</b></div>
+                <div class="rss-row"><span>🪵 Дерево</span> <b id="res-wood">0</b></div>
+                <div class="rss-row"><span>💎 Руда</span> <b id="res-ore">0</b></div>
+                <div class="rss-row gold"><span>💰 Золото</span> <b id="res-gold">0</b></div>
+            </div>
+
+            <div class="actions-group">
+                <button class="main-action-btn" onclick="calculateLeft()">РОЗРАХУВАТИ</button>
+                <button class="reset-icon-btn" onclick="resetCalc('main')">🗑️</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleWeekSwitch(btn, isLastWeek) {
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.week-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (typeof loadMonsterStats === 'function') loadMonsterStats(isLastWeek);
+    }
+    
+    // Вбудовані функції перемикання для калькулятора, щоб працювало миттєво
+    function switchCalcTab(tabId, btn) {
+        document.querySelectorAll('.calc-content').forEach(el => el.style.display = 'none');
+        document.getElementById('calc-' + tabId).style.display = 'block';
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function toggleT5SubMode(mode, btn) {
+        document.querySelectorAll('.t5-sub-content').forEach(el => el.style.display = 'none');
+        document.getElementById('t5-sub-' + mode).style.display = 'block';
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function selectTier(btn, type) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.tier-select').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    function selectType(btn) {
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.tier-select').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>

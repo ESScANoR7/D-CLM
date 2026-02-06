@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D*C Guild - Панель управління</title>
+    <link rel="stylesheet" href="/static/css/css.css">
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo.png') }}">
+</head>
+<body class="dash-body">
+
+    <input type="hidden" id="user-role-hidden" value="{{ role }}">
+
+    <button class="burger-btn" onclick="toggleMenu()">☰</button>
+
+    <div class="mobile-overlay" onclick="toggleMenu()"></div>
+
+    <div class="dash-wrapper">
+        <aside class="side-menu" id="sideMenu">
+            <div class="side-logo">
+                <img src="/static/img/logo.png">
+            </div>
+            
+            
+            <nav class="nav-list">
+                {% if role == 'guest' %}
+                    <a href="javascript:void(0)" class="nav-link active" onclick="loadTab('guest_home'); closeMenu()">Головна</a>
+                {% else %}
+                    <a href="javascript:void(0)" class="nav-link active" onclick="loadTab('home'); closeMenu()">Головна</a>
+                {% endif %}
+
+                {% if role in ['player', 'admin'] %}
+                    <a href="javascript:void(0)" class="nav-link" onclick="loadTab('arena'); closeMenu()">Арена Драконів</a>
+                    <a href="javascript:void(0)" class="nav-link" onclick="loadTab('players'); closeMenu()">Результати гравця</a>
+                    <a href="javascript:void(0)" class="nav-link" onclick="loadTab('kvk'); closeMenu()">КВК</a>
+                    <a href="javascript:void(0)" class="nav-link" onclick="loadTab('monsters'); closeMenu()">Монстри</a>
+                {% endif %}
+
+                <a href="javascript:void(0)" class="nav-link" onclick="loadTab('calc'); closeMenu()">Калькулятор</a>
+                <a href="javascript:void(0)" class="nav-link" onclick="loadTab('settings'); closeMenu()">Налаштування</a>
+
+                {% if role == 'admin' %}
+                    <a href="javascript:void(0)" class="nav-link" onclick="loadTab('admin'); closeMenu()" style="color: #ffd700;">Адмін-панель</a>
+                {% endif %}
+                <a href="javascript:void(0)" class="nav-link" onclick="loadTab('guest_guide'); closeMenu()">Бібліотека</a>
+            </nav>
+
+            {% if role != 'guest' %}
+            <button class="nav-btn" onclick="loadTab('call_list'); closeMenu()">
+                <div class="nav-icon">📞</div>
+                <span>Дозвін</span>
+            </button>
+            {% endif %}
+            
+            <div class="side-user">
+                <a href="/logout" title="Вийти" style="text-decoration: none; margin-right: 10px;">🚪</a>
+                <img src="/static/img/logo.png" alt="Mini Logo" class="user-avatar">
+                <span id="player-name">{{ nickname }}</span>
+            </div>
+        </aside>
+
+        <main class="main-view" id="content-holder">
+            </main>
+    </div>
+    
+    <script src="/static/js/js.js"></script>
+</body>
+</html>

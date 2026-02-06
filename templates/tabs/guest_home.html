@@ -1,0 +1,195 @@
+<div class="guest-home-wrapper">
+    <div class="card welcome-card">
+        <div class="accent-line"></div>
+        <div class="card-content">
+            <h2 class="gold-text">Гільдія D*C <span class="guild-tag">(Слабоумні та Відважні)</span></h2>
+            <p class="description">
+                «Вітаємо в лавах тих, хто не знає слова "страх", але добре знає, як виглядає палаючий ворожий замок! Якщо ти шукаєш не просто гільдію,
+                 а команду, з якою не страшно піти навіть у найбільш безнадійний збір — ти вдома. Давай покажемо цьому госу, на що здатні Слабоумні та Відважні!»
+            </p>
+        </div>
+    </div>
+
+    <div class="requirements-container card">
+        <h3 class="card-title">📜 Мінімальний поріг</h3>
+        <div class="requirements-grid">
+            <div class="req-box">
+                <span class="req-icon">🛡️</span>
+                <span class="req-label">Сила/кіли</span>
+                <span class="req-value">1.2b+/300m+</span>
+            </div>
+            <div class="req-box">
+                <span class="req-icon">🏹</span>
+                <span class="req-label">Війська</span>
+                <span class="req-value">T4/T5</span>
+            </div>
+            <div class="req-box">
+                <span class="req-icon">👹</span>
+                <span class="req-label">Полювання</span>
+                <span class="req-value">56x Lvl 2</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card checklist-card">
+        <h3 class="card-title">⚔️ Твій шлях до S&V</h3>
+        <div class="checklist-list">
+            <div class="check-row completed">
+                <div class="status-indicator">
+                    <i class="icon-check">✔</i>
+                </div>
+                <div class="check-text">Зареєструватися як Гість</div>
+            </div>
+            <div class="check-row">
+                <div class="status-indicator"></div>
+                <div class="check-text">Підтягнути міць до 1,2b та кіли до 300м+ </div>
+            </div>
+            <div class="check-row">
+                <div class="status-indicator"></div>
+                <div class="check-text">Зв'язатися з R4 для перевірки</div>
+            </div>
+            <div class="check-row">
+                <div class="status-indicator"></div>
+                <div class="check-text">Отримати роль гравця!</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Загальний контейнер */
+.guest-home-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Базова карта */
+.card {
+    background: rgba(25, 25, 25, 0.9);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* Вітальна картка з лінією */
+.welcome-card {
+    display: flex;
+    padding: 0;
+}
+.accent-line {
+    width: 6px;
+    background: linear-gradient(to bottom, #ffd700, #b8860b);
+}
+.card-content {
+    padding: 25px;
+}
+.gold-text {
+    color: #ffd700;
+    font-size: 1.6em;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.guild-tag {
+    font-size: 0.7em;
+    opacity: 0.8;
+    font-weight: normal;
+}
+.description {
+    color: #ccc;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Сітка вимог */
+.card-title {
+    color: #fff;
+    font-size: 1.1em;
+    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+.requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.req-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: 0.3s;
+}
+.req-box:hover {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.05);
+}
+.req-icon { font-size: 1.5em; margin-bottom: 5px; }
+.req-label { font-size: 0.75em; color: #888; text-transform: uppercase; }
+.req-value { font-size: 1.2em; color: #ffd700; font-weight: bold; }
+
+/* Чек-лист */
+.checklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    border: 1px solid #333;
+    transition: 0.3s;
+}
+.status-indicator {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #555;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.check-text { color: #aaa; font-size: 0.95em; }
+
+/* Виконаний стан */
+.check-row.completed {
+    border-color: rgba(255, 215, 0, 0.3);
+    background: rgba(255, 215, 0, 0.03);
+}
+.completed .status-indicator {
+    background: #ffd700;
+    border-color: #ffd700;
+}
+.completed .icon-check {
+    color: #000;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+.completed .check-text {
+    color: #ffd700;
+}
+
+/* Адаптивність */
+@media (max-width: 600px) {
+    .requirements-grid { grid-template-columns: 1fr; }
+    .gold-text { font-size: 1.3em; }
+}
+</style>

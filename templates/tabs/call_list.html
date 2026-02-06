@@ -1,0 +1,67 @@
+<header class="view-header compact-header">
+    <h1>📞 Дозвін Гравців</h1>
+</header>
+
+<div class="card arena-card full-height">
+    <div class="table-controls">
+        <input type="text" id="search-call" onkeyup="searchTable('call-table', 'search-call')" placeholder="🔍 Пошук по ніку..." class="search-input">
+        
+        <div id="call-admin-panel" style="display:none; margin-left: 10px;">
+            <button class="gold-save-btn small-btn" onclick="openAddModal()">➕ Додати</button>
+        </div>
+
+        <button class="refresh-btn" onclick="loadCallList()" style="margin-left:auto;">🔄</button>
+    </div>
+
+    <div class="table-scroll-container">
+        <table class="arena-table" id="call-table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('call-table', 0)">Гравець ⇅</th>
+                    <th>Телефон</th>
+                    <th onclick="sortTable('call-table', 2)">Кріпити ⇅</th>
+                    <th onclick="sortTable('call-table', 3, true)">Міць ⇅</th>
+                    <th onclick="sortTable('call-table', 4, true)">Кіли ⇅</th>
+                    <th id="th-action" style="display:none;">Дія</th>
+                </tr>
+            </thead>
+            <tbody id="call-table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="player-modal" class="modal-overlay" style="display: none;">
+    <div class="card call-modal-card">
+        <h3 id="modal-title" class="card-title">Додати Гравця</h3>
+        
+        <div class="input-grid-modal">
+            <div class="input-wrap">
+                <label>Нікнейм</label>
+                <input type="text" id="edit-nick" class="arena-input">
+            </div>
+            <div class="input-wrap">
+                <label>IGG ID</label>
+                <input type="text" id="edit-igg" class="arena-input">
+            </div>
+            <div class="input-wrap">
+                <label>Телефон</label>
+                <input type="text" id="edit-phone" class="arena-input">
+            </div>
+            <div class="input-wrap">
+                <label>Тип Кріплення</label>
+                <input type="text" id="edit-trap" class="arena-input" placeholder="Напр: Піхи">
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="gold-save-btn cancel-btn" onclick="closePlayerModal()">Скасувати</button>
+            <button class="gold-save-btn" onclick="savePlayerFromModal()">💾 Зберегти</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(() => {
+        if(typeof loadCallList === 'function') loadCallList();
+    }, 100);
+</script>

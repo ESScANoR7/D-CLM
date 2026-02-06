@@ -1,0 +1,77 @@
+<header class="view-header">
+    <h1>🐲 Арена Драконів</h1>
+</header>
+
+<div class="arena-layout">
+    <div class="card arena-card">
+        <h3 class="card-title">📅 Розклад Арени</h3>
+        <div class="arena-row display-only">
+            <div class="info-box">
+                <span class="label">Дата:</span>
+                <span class="value gold-text" id="arena-date-display">Завантаження...</span>
+            </div>
+            <div class="info-box">
+                <span class="label">Час (UTC):</span>
+                <span class="value gold-text" id="arena-time-display">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card arena-card">
+        <h3 class="card-title">Ти йдеш на арену?</h3>
+        <div class="arena-row button-row" id="status-group">
+            <button class="status-btn" data-val="yes" onclick="selectArenaOption('status', this)">
+                <span class="icon">✅</span> Так, буду!
+            </button>
+            <button class="status-btn" data-val="no" onclick="selectArenaOption('status', this)">
+                <span class="icon">❌</span> Пас
+            </button>
+        </div>
+    </div>
+
+    <div class="card arena-card">
+        <h3 class="card-title">Вибір Команди</h3>
+        <div class="arena-row button-row" id="team-group">
+            <button class="team-btn" data-val="A" onclick="selectArenaOption('team', this)">
+                🦁 Команда А
+            </button>
+            <button class="team-btn" data-val="B" onclick="selectArenaOption('team', this)">
+                🐯 Команда Б
+            </button>
+        </div>
+    </div>
+
+    <div class="card arena-card">
+        <h3 class="card-title">📊 Мої Бойові Стати</h3>
+        <div class="stats-scrolls-grid">
+            <div class="scroll-item">
+                <span class="scroll-label">Піхота (%)</span>
+                <input type="number" id="stat-inf" class="arena-input" placeholder="0">
+            </div>
+            <div class="scroll-item">
+                <span class="scroll-label">Луки (%)</span>
+                <input type="number" id="stat-rng" class="arena-input" placeholder="0">
+            </div>
+            <div class="scroll-item">
+                <span class="scroll-label">Кавалерія (%)</span>
+                <input type="number" id="stat-cav" class="arena-input" placeholder="0">
+            </div>
+            <div class="scroll-item">
+                <span class="scroll-label">ОЗ Армії (%)</span>
+                <input type="number" id="stat-hp" class="arena-input" placeholder="0">
+            </div>
+            <div class="scroll-item">
+                <span class="scroll-label">АТК Армії (%)</span>
+                <input type="number" id="stat-atk" class="arena-input" placeholder="0">
+            </div>
+            <div class="scroll-item">
+                <span class="scroll-label">Розмір Армії (k/m)</span>
+                <input type="text" id="stat-size" class="arena-input" placeholder="Напр: 2m 400">
+            </div>
+        </div>
+        
+        <div class="arena-footer">
+            <button class="gold-save-btn" onclick="saveArenaStats()">💾 Зберегти Дані</button>
+        </div>
+    </div>
+</div>

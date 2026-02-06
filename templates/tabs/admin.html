@@ -1,0 +1,299 @@
+<header class="view-header compact-header">
+    <h1>👑 Панель Адміністратора</h1>
+</header>
+
+<div class="admin-wrapper">
+    
+    <div class="admin-nav-container">
+        <div class="admin-nav">
+            <button class="nav-item active" onclick="switchAdminTab(this, 'general')">⚙️ Головна</button>
+            <button class="nav-item" onclick="switchAdminTab(this, 'arena')">🐲 Арена</button>
+            <button class="nav-item" onclick="switchAdminTab(this, 'kvk')">⚔️ KVK</button>
+            <button class="nav-item" onclick="switchAdminTab(this, 'monsters')">👾 Монстри</button>
+            <button class="nav-item" onclick="switchAdminTab(this, 'kills')">💀 Кіли</button>
+            <button class="nav-item" onclick="switchAdminTab(this, 'settings')">📥 Налаштування</button>
+        </div>
+    </div>
+
+    <div id="adm-general" class="admin-view active">
+        <div class="card admin-card">
+            <h3 class="card-title">📣 Оголошення Лідера</h3>
+            <div class="announcement-wrap">
+                <textarea id="announcement-input" class="arena-input text-area" rows="5" placeholder="Напишіть нове оголошення для гільдії..."></textarea>
+                <button class="gold-save-btn" onclick="window.updateAnnouncement()">💾 Опублікувати</button>
+            </div>
+        </div>
+
+        <div class="card admin-card full-height">
+            <div class="table-controls">
+                <h3 class="card-title">👥 Список Всіх Гравців</h3>
+                <input type="text" id="search-users" onkeyup="searchTable('users-table', 'search-users')" placeholder="🔍 Пошук..." class="search-input">
+            </div>
+            <div class="table-scroll-container">
+                <table class="arena-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('users-table', 0)">ID ⇅</th>
+                            <th onclick="sortTable('users-table', 1)">Нікнейм ⇅</th>
+                            <th onclick="sortTable('users-table', 2)">IGG ID ⇅</th>
+                            <th onclick="sortTable('users-table', 3)">Роль ⇅</th>
+                            <th>Дія</th> 
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="adm-arena" class="admin-view" style="display: none;">
+        <div class="card admin-card full-height">
+            <div class="table-controls">
+                <h3 class="card-title">🐲 Арена: Звіт</h3>
+                <div class="controls-right">
+                    <input type="text" id="search-arena" onkeyup="searchTable('arena-table', 'search-arena')" placeholder="🔍 Пошук..." class="search-input">
+                    <button class="refresh-btn" onclick="loadAdminArenaData()">🔄</button>
+                </div>
+            </div>
+            
+            <div class="table-scroll-container">
+                <table class="arena-table" id="arena-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('arena-table', 0)">Гравець ⇅</th>
+                            <th onclick="sortTable('arena-table', 1)">Статус ⇅</th>
+                            <th onclick="sortTable('arena-table', 2)">Команда ⇅</th>
+                            <th onclick="sortTable('arena-table', 3)">Піх % ⇅</th>
+                            <th onclick="sortTable('arena-table', 4)">Лук % ⇅</th>
+                            <th onclick="sortTable('arena-table', 5)">Коні % ⇅</th>
+                            <th onclick="sortTable('arena-table', 6)">АТК % ⇅</th>
+                            <th onclick="sortTable('arena-table', 7)">ОЗ % ⇅</th>
+                            <th onclick="sortTable('arena-table', 8)">Армія ⇅</th> 
+                        </tr>
+                    </thead>
+                    <tbody id="arena-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="adm-kvk" class="admin-view" style="display: none;">
+        <div class="card admin-card full-height">
+            <div class="table-controls">
+                <h3 class="card-title">⚔️ KVK: Звіт</h3>
+                <div class="controls-right">
+                    <input type="text" id="search-kvk" onkeyup="searchTable('kvk-table', 'search-kvk')" placeholder="🔍 Пошук..." class="search-input">
+                    <button class="refresh-btn" onclick="loadAdminKvkData()">🔄</button>
+                </div>
+            </div>
+
+            <div class="table-scroll-container">
+                <table class="arena-table kvk-table" id="kvk-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('kvk-table', 0)">Гравець ⇅</th>
+                            <th onclick="sortTable('kvk-table', 1)">Готовий ⇅</th>
+                            <th onclick="sortTable('kvk-table', 2)">Виліт ⇅</th>
+                            <th onclick="sortTable('kvk-table', 3)">Закрите ⇅</th>
+                            <th onclick="sortTable('kvk-table', 4)">№ Кор ⇅</th>
+                            <th onclick="sortTable('kvk-table', 5)">Піх % ⇅</th>
+                            <th onclick="sortTable('kvk-table', 6)">Лук % ⇅</th>
+                            <th onclick="sortTable('kvk-table', 7)">Коні % ⇅</th>
+                            <th onclick="sortTable('kvk-table', 8)">Армія % ⇅</th>
+                            <th onclick="sortTable('kvk-table', 9)">HP % ⇅</th>
+                            <th onclick="sortTable('kvk-table', 10)">🐰 ⇅</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kvk-report-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="adm-monsters" class="admin-view" style="display: none;">
+        
+        <div class="card admin-card debt-alert-card" id="debtors-card" style="display: none;">
+            <h3 class="card-title debt-title">⚠️ Гравці з Боргом (<span id="debt-count">0</span>)</h3>
+            <div class="table-scroll-container small-height">
+                <table class="arena-table">
+                    <thead>
+                        <tr>
+                            <th class="red-text">Нікнейм</th>
+                            <th class="red-text">Бали</th>
+                            <th class="red-text">БОРГ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debtors-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card admin-card full-height">
+            <div class="table-controls">
+                <h3 class="card-title">📊 Статистика Полювання</h3>
+                <div class="controls-right">
+                    <input type="text" id="search-monsters" onkeyup="searchTable('monsters-table', 'search-monsters')" placeholder="🔍 Пошук..." class="search-input">
+                    <button class="refresh-btn" onclick="loadAdminMonsterData()">🔄</button>
+                </div>
+            </div>
+            
+            <div class="table-scroll-container">
+                <table class="arena-table" id="monsters-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('monsters-table', 0)">Нікнейм ⇅</th>
+                            <th onclick="sortTable('monsters-table', 1)">IGG ID ⇅</th> 
+                            <th onclick="sortTable('monsters-table', 2)" class="gold-text">Бали ⇅</th>
+                            <th onclick="sortTable('monsters-table', 3)" class="red-text">Борг ⇅</th>
+                            <th onclick="sortTable('monsters-table', 4)">L1 ⇅</th>
+                            <th onclick="sortTable('monsters-table', 5)">L2 ⇅</th>
+                            <th onclick="sortTable('monsters-table', 6)">L3 ⇅</th>
+                            <th onclick="sortTable('monsters-table', 7)">L4 ⇅</th>
+                            <th onclick="sortTable('monsters-table', 8)">L5 ⇅</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monsters-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="adm-kills" class="admin-view" style="display: none;">
+        <div class="card admin-card full-height">
+            <div class="table-controls">
+                <h3 class="card-title">💀 Статистика Вбивств та Сили</h3>
+                <div class="controls-right">
+                    <input type="text" id="search-kills" onkeyup="searchTable('kills-table', 'search-kills')" placeholder="🔍 Пошук..." class="search-input">
+                    <button class="refresh-btn" onclick="loadAdminKillsData()">🔄</button>
+                </div>
+            </div>
+            
+            <div class="table-scroll-container">
+                <table class="arena-table" id="kills-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('kills-table', 0)">Нікнейм ⇅</th>
+                            <th onclick="sortTable('kills-table', 1)" class="gold-text">Міць ⇅</th>
+                            <th onclick="sortTable('kills-table', 2)">Ріст Міці ⇅</th>
+                            <th onclick="sortTable('kills-table', 3)" class="red-text">Кіли ⇅</th>
+                            <th onclick="sortTable('kills-table', 4)">Ріст Кілів ⇅</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kills-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="adm-settings" class="admin-view" style="display: none;">
+        
+        <div class="card admin-card">
+            <h3 class="card-title">📅 Налаштування Дат</h3>
+            
+            <h4 class="sub-title gold-text">Арена Драконів</h4>
+            <div class="input-row-admin">
+                <div class="input-wrap">
+                    <label>Дата (DD.MM.YYYY)</label>
+                    <input type="text" id="event-date-input" class="arena-input" placeholder="02.02.2026">
+                </div>
+                <div class="input-wrap">
+                    <label>Час (HH:MM)</label>
+                    <input type="text" id="event-time-input" class="arena-input" placeholder="19:00">
+                </div>
+            </div>
+
+            <h4 class="sub-title red-text">KVK (Битва Королівств)</h4>
+            <div class="input-row-admin">
+                <div class="input-wrap">
+                    <label>Дата (DD.MM.YYYY)</label>
+                    <input type="text" id="kvk-date-input" class="arena-input" placeholder="05.02.2026">
+                </div>
+                <div class="input-wrap">
+                    <label>Час (HH:MM)</label>
+                    <input type="text" id="kvk-time-input" class="arena-input" placeholder="13:00">
+                </div>
+            </div>
+
+            <button class="gold-save-btn" onclick="window.updateEventDates()">Зберегти Всі Дати</button>
+        </div>
+
+        <div class="card admin-card security-card-flat">
+            <h3 class="card-title">🔐 Безпека Гільдії</h3>
+            
+            <div class="flat-input-block">
+                <label for="guild-pass-input" class="flat-label">Код реєстрації для новачків:</label>
+                <input type="text" id="guild-pass-input" class="flat-dark-input-large" placeholder="ВВЕДІТЬ КОД..." spellcheck="false">
+            </div>
+
+            <button class="gold-save-btn full-width-action-btn" onclick="window.saveGuildPass()">
+                💾 ЗМІНИТИ КОД
+            </button>
+            
+            <p class="hint-text" style="text-align: center; margin-top: 15px;">
+                Повідомте цей код гравцям, щоб вони могли зареєструватися.
+            </p>
+        </div>
+
+        <div class="card admin-card">
+            <h3 class="card-title">📥 Завантаження Excel</h3>
+            <div class="upload-grid">
+                <div class="upload-box">
+                    <label>🛡️ Загальна Статистика (General)</label>
+                    <input type="file" id="excel-general" class="file-input">
+                    <div class="upload-actions">
+                        <button class="upload-btn prev" onclick="window.performUpload('general', 'past')">⏪ Старий Тиждень</button>
+                        <button class="upload-btn next" onclick="window.performUpload('general', 'new')">⏩ Новий Тиждень</button>
+                    </div>
+                </div>
+                
+                <div class="upload-box">
+                    <label>👾 Полювання (Monsters)</label>
+                    <input type="file" id="excel-monsters" class="file-input">
+                    <div class="upload-actions">
+                        <button class="upload-btn prev" onclick="window.performUpload('monsters', 'past')">⏪ Старий Тиждень</button>
+                        <button class="upload-btn next" onclick="window.performUpload('monsters', 'new')">⏩ Новий Тиждень</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card admin-card">
+            <div class="table-controls">
+                <h3 class="card-title">Історія Завантажень</h3>
+                <button class="refresh-btn" onclick="window.loadUploadHistory()">🔄</button>
+            </div>
+            <div class="table-scroll-container small-height">
+                <table class="arena-table">
+                    <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Тип</th>
+                            <th>Період</th> 
+                            <th>Дата</th>
+                            <th>Адмін</th>
+                            <th>Дія</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Функція перемикання вкладок адмінки
+    function switchAdminTab(btn, tabId) {
+        document.querySelectorAll('.admin-view').forEach(el => el.style.display = 'none');
+        document.getElementById('adm-' + tabId).style.display = 'block';
+        
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Тут можна додати логіку завантаження даних при відкритті вкладки
+        if(tabId === 'arena') loadAdminArenaData();
+        if(tabId === 'kvk') loadAdminKvkData();
+        if(tabId === 'monsters') loadAdminMonsterData();
+        if(tabId === 'kills') loadAdminKillsData();
+    }
+</script>
