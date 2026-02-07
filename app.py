@@ -13,6 +13,10 @@ import gc  # Garbage Collector для примусового закриття ф
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+from datetime import timedelta
+
+app.permanent_session_lifetime = timedelta(days=7) # Сесія буде жити 7 днів
+
 # Конфігурація MySQL
 
 # Пріоритет віддаємо базі з інтернету (Render), якщо її немає — локальній
@@ -189,8 +193,12 @@ def register_guest():
         db.session.add(new_guest)
         db.session.commit()
 
+
+
+
         # Авторизація
         session.clear()
+        session.permanent = True
         session.update({
             'user_id': new_guest.id,
             'nickname': display_nick,
@@ -220,6 +228,7 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
         session.clear()
+        session.permanent = True
         session.update({
             'user_id': user.id,
             'nickname': user.nickname,
@@ -267,6 +276,9 @@ def register_player():
 
         db.session.add(new_user)
         db.session.commit()
+
+        session.clear()  # Рекомендую очистити стару сесію перед новою
+        session.permanent = True
 
         # 4. Авторизація
         session.update({'user_id': new_user.id, 'nickname': new_user.nickname, 'role': 'player'})
