@@ -22,9 +22,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-with app.app_context():
-    db.create_all()
-    print("Таблиці успішно перевірені/створені!")
 
 
 # ==========================================
@@ -138,7 +135,21 @@ class KvkStats(db.Model):
     army_hp = db.Column(db.String(10))
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-
+with app.app_context():
+    db.create_all()
+    # Перевіряємо, чи є рядок з налаштуваннями гільдії
+    if not GuildConfig.query.get(1):
+        default_config = GuildConfig(
+            id=1,
+            announcement="Ласкаво просимо до Гільдії!",
+            guild_pass="1234",  # Пароль за замовчуванням
+            hunt_goal=56
+        )
+        db.session.add(default_config)
+        db.session.commit()
+        print("База ініціалізована: Таблиці та дефолтний конфіг створено!")
+    else:
+        print("Таблиці успішно перевірені!")
 # ==========================================
 # ГОЛОВНІ РОУТИ
 # ==========================================
