@@ -14,7 +14,9 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Конфігурація MySQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:zxc1@127.0.0.1:3306/guild_db'
+
+# Пріоритет віддаємо базі з інтернету (Render), якщо її немає — локальній
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:password@localhost/guild_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
