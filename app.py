@@ -648,6 +648,10 @@ def upload_general_stats():
             UploadLog(filename=filename, upload_type='general', period=period, admin_name=session.get('nickname')))
 
         df = pd.read_excel(file_path)
+        print("--- DEBUG START ---")
+        print(f"Колонки, які побачив сервер: {list(df.columns)}")
+        print(f"Перший рядок даних: {df.iloc[0].to_dict() if not df.empty else 'Файл порожній'}")
+        print("--- DEBUG END ---")
         # Очищаємо назви колонок: видаляємо пробіли та переводимо в нижній регістр для перевірки
         df.columns = [str(col).strip() for col in df.columns]
         count = 0
