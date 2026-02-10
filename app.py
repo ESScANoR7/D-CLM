@@ -750,99 +750,14 @@ def delete_upload_api():
 
     try:
         data = request.json
-        log = UploadLog.query.get(data.get('log_id'))
+        log_id = data.get('log_id')
+        log = UploadLog.query.get(log_id)
         if not log: return jsonify({'error': 'Запис не знайдено'}), 404
 
         file_path = os.path.abspath(os.path.join('uploads', log.filename))
+        upload_type = log.upload_type
 
-        # --- 1. ВІДКАТ ДАНИХ ДЛЯ МОНСТРІВ ---
-        if log.upload_type == 'monsters':
-            # Спершу робимо математичний відкат боргу на основі файлу, який видаляємо
-            if os.path.exists(file_path):
-                try:
-                    df = pd.read_excel(file_path)
-                    df.columns = [str(col).strip() for col in df.columns]
-                    config = GuildConfig.query.get(1)
-                    GOAL = config.hunt_goal if config else 56
-
-                    def get_val_local(row, keys):
-                        for col in df.columns:
-                            if col.lower() in [k.lower() for k in keys]: return row[col]
-                        return 0
-
-                    for _, row in df.iterrows():
-                        raw_igg = get_val_local(row, ['IGG ID', 'User ID', 'ID', 'ID гравця'])
-                        if not raw_igg: continue
-                        igg_id = "".join(filter(str.isdigit, str(raw_igg)))
-                        stat = PlayerStats.query.filter_by(igg_id=igg_id).first()
-                        if stat:
-                            l2 = int(get_val_local(row, ['L2', 'L2 (Hunt)', 'Монстри L2']))
-                            l3 = int(get_val_local(row, ['L3', 'L3 (Hunt)', 'Монстри L3']))
-                            l4 = int(get_val_local(row, ['L4', 'L4 (Hunt)', 'Монстри L4']))
-                            l5 = int(get_val_local(row, ['L5', 'L5 (Hunt)', 'Монстри L5']))
-
-                            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 10)
-                            diff = points - GOAL
-
-                            # Відкат боргу (навпаки до нарахування)
-                            if diff >= 0:
-                                stat.monster_debt += diff
-                            else:
-                                stat.monster_debt -= abs(diff)
-
-                            if stat.monster_debt < 0: stat.monster_debt = 0
-
-                    db.session.commit()
-                    del df
-                    gc.collect()
-                except Exception as e:
-                    print(f"DEBUG: Помилка відкату боргу: {e}")
-
-            # Видаляємо лог перед тим, як шукати попередній
-            db.session.delete(log)
-            db.session.commit()
-
-            # 🔥 ІНТЕЛЕКТУАЛЬНИЙ ВІДКАТ ДО ПОПЕРЕДНЬОГО ФАЙЛУ
-            # Шукаємо останній доступний файл монстрів, який тепер став "новим"
-            remaining_logs = UploadLog.query.filter_by(upload_type='monsters').order_by(UploadLog.id.desc()).all()
-
-            if not remaining_logs:
-                # Якщо файлів не залишилося — повне обнулення
-                PlayerStats.query.update({
-                    'hunt_points': 0, 'hunt_l1': 0, 'hunt_l2': 0, 'hunt_l3': 0, 'hunt_l4': 0, 'hunt_l5': 0,
-                    'last_hunt_points': 0, 'last_hunt_l1': 0, 'last_hunt_l2': 0, 'last_hunt_l3': 0, 'last_hunt_l4': 0,
-                    'last_hunt_l5': 0,
-                    'monster_debt': 0
-                })
-                print("DEBUG: Усі логи монстрів видалено. Дані очищено.")
-            else:
-                # Якщо є попередній файл — він тепер має стати у вкладку "Минулий тиждень"
-                # А поточні бали просто обнуляємо, щоб адмін завантажив актуальний тиждень
-                PlayerStats.query.update({
-                    'hunt_points': 0, 'hunt_l1': 0, 'hunt_l2': 0, 'hunt_l3': 0, 'hunt_l4': 0, 'hunt_l5': 0
-                })
-                # Також можна додати логіку автоматичного зчитування 'remaining_logs[0]' у 'last_hunt_...'
-                # Але оскільки завантаження і так зміщує дані, сайт покаже попередній файл автоматично у вкладці "Минулий"
-
-            db.session.commit()
-
-        # --- 2. ВІДКАТ ДАНИХ ДЛЯ КІЛІВ/МІЦІ (GENERAL) ---
-        elif log.upload_type == 'general':
-            record_date = date.today() - timedelta(days=7) if log.period == 'past' else date.today()
-            PlayerHistory.query.filter_by(recorded_at=record_date).delete()
-
-            if log.period == 'new':
-                players = PlayerStats.query.all()
-                for stat in players:
-                    stat.might_current = stat.might_start
-                    stat.kills_current = stat.kills_start
-                    stat.might_diff = 0
-                    stat.kills_diff = 0
-
-            db.session.delete(log)
-            db.session.commit()
-
-        # --- 3. ФІЗИЧНЕ ВИДАЛЕННЯ ФАЙЛУ ---
+        # 1. ФІЗИЧНЕ ВИДАЛЕННЯ ФАЙЛУ
         if os.path.exists(file_path):
             try:
                 gc.collect()
@@ -850,7 +765,113 @@ def delete_upload_api():
             except Exception as e:
                 print(f"DEBUG: Не вдалося видалити файл: {e}")
 
-        return jsonify({'message': f'Запис {log.upload_type} видалено, дані відкочено!'})
+        # 2. ВИДАЛЕННЯ ЛОГУ З БАЗИ
+        db.session.delete(log)
+        db.session.commit()
+
+        # 3. ПЕРЕРАХУНОК МОНСТРІВ
+        if upload_type == 'monsters':
+            # Обнуляємо дані перед перерахунком
+            PlayerStats.query.update({
+                'hunt_points': 0, 'hunt_l1': 0, 'hunt_l2': 0, 'hunt_l3': 0, 'hunt_l4': 0, 'hunt_l5': 0,
+                'last_hunt_points': 0, 'last_hunt_l1': 0, 'last_hunt_l2': 0, 'last_hunt_l3': 0, 'last_hunt_l4': 0,
+                'last_hunt_l5': 0,
+                'monster_debt': 0
+            })
+            db.session.commit()
+
+            remaining_logs = UploadLog.query.filter_by(upload_type='monsters').order_by(UploadLog.id.asc()).all()
+            config = GuildConfig.query.get(1)
+            GOAL = config.hunt_goal if config else 56
+
+            for r_log in remaining_logs:
+                r_path = os.path.abspath(os.path.join('uploads', r_log.filename))
+                if os.path.exists(r_path):
+                    try:
+                        df = pd.read_excel(r_path)
+                        df.columns = [str(col).strip() for col in df.columns]
+
+                        def get_val_recalc(row, keys):
+                            for col in df.columns:
+                                if col.lower() in [k.lower() for k in keys]: return row[col]
+                            return 0
+
+                        for _, row in df.iterrows():
+                            raw_igg = get_val_recalc(row, ['IGG ID', 'User ID', 'ID'])
+                            if not raw_igg: continue
+                            igg_id = "".join(filter(str.isdigit, str(raw_igg)))
+                            stat = PlayerStats.query.filter_by(igg_id=igg_id).first()
+                            if not stat: continue
+
+                            l2 = int(get_val_recalc(row, ['L2', 'L2 (Hunt)', 'Монстри L2']))
+                            l3 = int(get_val_recalc(row, ['L3', 'L3 (Hunt)', 'Монстри L3']))
+                            l4 = int(get_val_recalc(row, ['L4', 'L4 (Hunt)', 'Монстри L4']))
+                            l5 = int(get_val_recalc(row, ['L5', 'L5 (Hunt)', 'Монстри L5']))
+                            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 10)
+
+                            stat.hunt_points = points
+                            stat.hunt_l2, stat.hunt_l3, stat.hunt_l4, stat.hunt_l5 = l2, l3, l4, l5
+                            stat.monster_debt = apply_week_result(stat.monster_debt, points, GOAL)
+
+                        db.session.commit()
+                    except Exception as e:
+                        print(f"DEBUG: Помилка перерахунку монстрів: {e}")
+
+        # 4. ПЕРЕРАХУНОК КІЛІВ ТА МІЦІ (Блок тепер на правильному рівні відступу)
+        elif upload_type == 'general':
+            # Видаляємо точку з графіка
+            record_date = date.today()
+            PlayerHistory.query.filter_by(recorded_at=record_date).delete()
+
+            # Скидаємо до старту
+            players = PlayerStats.query.all()
+            for p in players:
+                p.might_current = p.might_start
+                p.kills_current = p.kills_start
+                p.might_diff = 0
+                p.kills_diff = 0
+            db.session.commit()
+
+            remaining_gen_logs = UploadLog.query.filter_by(upload_type='general', period='new').order_by(
+                UploadLog.id.asc()).all()
+
+            for g_log in remaining_gen_logs:
+                g_path = os.path.abspath(os.path.join('uploads', g_log.filename))
+                if os.path.exists(g_path):
+                    try:
+                        df = pd.read_excel(g_path)
+                        df.columns = [str(col).strip() for col in df.columns]
+                        for _, row in df.iterrows():
+                            raw_igg = row.get('User ID') or row.get('IGG ID') or row.get('ID')
+                            if not raw_igg: continue
+                            igg_id = "".join(filter(str.isdigit, str(raw_igg)))
+                            stat = PlayerStats.query.filter_by(igg_id=igg_id).first()
+
+                            if stat:
+                                new_might = int(row.get('Might') or row.get('Міць') or stat.might_start)
+                                new_kills = int(row.get('Kills') or row.get('Вбивства') or stat.kills_start)
+
+                                # Міць може падати (мінус дозволено)
+                                stat.might_current = new_might
+                                stat.might_diff = stat.might_current - stat.might_start
+
+                                # Кіли не можуть падати нижче старту
+                                if new_kills < stat.kills_start:
+                                    stat.kills_current = stat.kills_start
+                                    stat.kills_diff = 0
+                                else:
+                                    stat.kills_current = new_kills
+                                    stat.kills_diff = stat.kills_current - stat.kills_start
+                        db.session.commit()
+                    except Exception as e:
+                        print(f"DEBUG: Помилка перерахунку General: {e}")
+
+            # Якщо логів General немає — чистимо графіки повністю
+            if UploadLog.query.filter_by(upload_type='general').count() == 0:
+                PlayerHistory.query.delete()
+                db.session.commit()
+
+        return jsonify({'message': 'Файл видалено, дані та борги успішно перераховано!'})
 
     except Exception as e:
         db.session.rollback()
