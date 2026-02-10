@@ -212,37 +212,6 @@ def register_guest():
         db.session.rollback()
         return jsonify({"error": "Помилка бази даних"}), 500
 
-
-with app.app_context():
-    db.create_all()
-
-    from sqlalchemy import text
-
-    try:
-        # Очищаємо ТІЛЬКИ монстрів, борги та загальну статистику (кіли/міць)
-        db.session.execute(text("""
-            UPDATE player_stats 
-            SET 
-                -- Обнуляємо монстрів
-                hunt_l1 = 0, hunt_l2 = 0, hunt_l3 = 0, hunt_l4 = 0, hunt_l5 = 0, 
-                hunt_points = 0, monster_debt = 0,
-                last_hunt_l1 = 0, last_hunt_l2 = 0, last_hunt_l3 = 0, last_hunt_l4 = 0, last_hunt_l5 = 0, 
-                last_hunt_points = 0,
-
-                -- Обнуляємо загальну статку (кіли/міць)
-                might_start = 0, might_current = 0, might_diff = 0,
-                kills_start = 0, kills_current = 0, kills_diff = 0
-        """))
-
-        # Видаляємо історію для графіків та логи завантажень
-        db.session.execute(text("DELETE FROM player_history"))
-        db.session.execute(text("DELETE FROM upload_log"))
-
-        db.session.commit()
-        print("✅ Очищено монстрів та кіли. Арена та КВК збережені!")
-    except Exception as e:
-        db.session.rollback()
-        print(f"❌ Помилка: {e}")
 @app.route('/guest_reg')
 def guest_reg():
     return render_template('guest.html')
@@ -601,36 +570,50 @@ def apply_week_result(current_debt, points, goal):
 def upload_monster_stats():
     if session.get('role') != 'admin': return jsonify({'error': 'Forbidden'}), 403
     file = request.files.get('file')
-    period = request.form.get('period')
     if not file: return jsonify({'error': 'No file'}), 400
 
     try:
-        # Унікальне ім'я файлу
+        # 1. Зберігаємо файл
         filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
         if not os.path.exists('uploads'): os.makedirs('uploads')
         file_path = os.path.join('uploads', filename)
         file.save(file_path)
 
+        # Реєструємо лог (завжди як 'new')
         db.session.add(
-            UploadLog(filename=filename, upload_type='monsters', period=period, admin_name=session.get('nickname')))
+            UploadLog(filename=filename, upload_type='monsters', period='new', admin_name=session.get('nickname')))
 
         df = pd.read_excel(file_path)
-        df.columns = df.columns.str.strip()
+        df.columns = [str(col).strip() for col in df.columns]
+
         config = GuildConfig.query.get(1)
         GOAL = config.hunt_goal if config else 56
         count = 0
 
-        def gv(row, keys):
-            for k in keys:
-                if k in df.columns and pd.notnull(row[k]):
-                    try:
-                        return int(row[k])
-                    except:
-                        pass
+        # --- АВТОМАТИЧНИЙ ПЕРЕХІД ДАНИХ ---
+        # Перед обробкою нового файлу копіюємо поточні дані в 'past' для ВСІХ гравців
+        players = PlayerStats.query.all()
+        for p in players:
+            p.last_hunt_l1 = p.hunt_l1
+            p.last_hunt_l2 = p.hunt_l2
+            p.last_hunt_l3 = p.hunt_l3
+            p.last_hunt_l4 = p.hunt_l4
+            p.last_hunt_l5 = p.hunt_l5
+            p.last_hunt_points = p.hunt_points
+
+            # Обнуляємо поточні, щоб завантажити свіжі
+            p.hunt_l1 = p.hunt_l2 = p.hunt_l3 = p.hunt_l4 = p.hunt_l5 = p.hunt_points = 0
+
+        def get_val(row, possible_keys):
+            for col in df.columns:
+                if col.lower() in [k.lower() for k in possible_keys]:
+                    return row[col]
             return 0
 
+        # 2. Обробляємо новий файл
         for _, row in df.iterrows():
-            raw_igg = row.get('User ID') or row.get('IGG ID') or row.get('ID')
+            raw_igg = get_val(row, ['IGG ID', 'User ID', 'ID', 'ID гравця'])
+            if not raw_igg: continue
             igg_id = "".join(filter(str.isdigit, str(raw_igg)))
             if not igg_id: continue
 
@@ -639,38 +622,32 @@ def upload_monster_stats():
                 stat = PlayerStats(igg_id=igg_id, monster_debt=0)
                 db.session.add(stat)
 
-            name = row.get('Name') or row.get('Nickname')
-            if name: stat.nickname = str(name)
+            # Оновлюємо нік, якщо він є у файлі
+            name = get_val(row, ['Нік', 'Name', 'Nickname'])
+            if name and pd.notnull(name): stat.nickname = str(name)
 
-            l1 = gv(row, ['L1 (Hunt)', 'L1']);
-            l2 = gv(row, ['L2 (Hunt)', 'L2'])
-            l3 = gv(row, ['L3 (Hunt)', 'L3']);
-            l4 = gv(row, ['L4 (Hunt)', 'L4'])
-            l5 = gv(row, ['L5 (Hunt)', 'L5'])
-            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 8)
+            l1 = int(get_val(row, ['L1', 'L1 (Hunt)', 'Монстри L1']))
+            l2 = int(get_val(row, ['L2', 'L2 (Hunt)', 'Монстри L2']))
+            l3 = int(get_val(row, ['L3', 'L3 (Hunt)', 'Монстри L3']))
+            l4 = int(get_val(row, ['L4', 'L4 (Hunt)', 'Монстри L4']))
+            l5 = int(get_val(row, ['L5', 'L5 (Hunt)', 'Монстри L5']))
 
-            if period == 'new':
-                stat.hunt_l1 = l1;
-                stat.hunt_l2 = l2;
-                stat.hunt_l3 = l3;
-                stat.hunt_l4 = l4;
-                stat.hunt_l5 = l5
-                stat.hunt_points = points
-                stat.monster_debt = apply_week_result(stat.monster_debt, points, GOAL)
-            elif period == 'past':
-                stat.last_hunt_l1 = l1;
-                stat.last_hunt_l2 = l2;
-                stat.last_hunt_l3 = l3
-                stat.last_hunt_l4 = l4;
-                stat.last_hunt_l5 = l5;
-                stat.last_hunt_points = points
+            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 10)
+
+            # Записуємо нові дані
+            stat.hunt_l1, stat.hunt_l2, stat.hunt_l3 = l1, l2, l3
+            stat.hunt_l4, stat.hunt_l5 = l4, l5
+            stat.hunt_points = points
+
+            # 🔥 Використовуємо твою нову логіку боргу
+            stat.monster_debt = apply_week_result(stat.monster_debt, points, GOAL)
             count += 1
 
         db.session.commit()
-        return jsonify({'message': f'Монстри ({period}): оновлено {count} гравців'})
+        return jsonify({'message': f'Тиждень оновлено! Дані перенесено в минулі, завантажено {count} нових записів.'})
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/admin/upload_general_stats', methods=['POST'])
 def upload_general_stats():
@@ -777,70 +754,83 @@ def delete_upload_api():
         if not log: return jsonify({'error': 'Запис не знайдено'}), 404
 
         file_path = os.path.abspath(os.path.join('uploads', log.filename))
-        print(f"DEBUG: Спроба видалення файлу ({log.upload_type}): {file_path}")
 
         # --- 1. ВІДКАТ ДАНИХ ДЛЯ МОНСТРІВ ---
-        if log.upload_type == 'monsters' and log.period == 'new':
+        if log.upload_type == 'monsters':
+            # Спершу робимо математичний відкат боргу на основі файлу, який видаляємо
             if os.path.exists(file_path):
                 try:
                     df = pd.read_excel(file_path)
-                    df.columns = df.columns.str.strip()
+                    df.columns = [str(col).strip() for col in df.columns]
                     config = GuildConfig.query.get(1)
                     GOAL = config.hunt_goal if config else 56
 
-                    def gv(row, keys):
-                        for k in keys:
-                            if k in df.columns and pd.notnull(row[k]):
-                                try:
-                                    return int(row[k])
-                                except:
-                                    pass
+                    def get_val_local(row, keys):
+                        for col in df.columns:
+                            if col.lower() in [k.lower() for k in keys]: return row[col]
                         return 0
 
                     for _, row in df.iterrows():
-                        raw_igg = row.get('User ID') or row.get('IGG ID') or row.get('ID')
+                        raw_igg = get_val_local(row, ['IGG ID', 'User ID', 'ID', 'ID гравця'])
+                        if not raw_igg: continue
                         igg_id = "".join(filter(str.isdigit, str(raw_igg)))
-                        if not igg_id: continue
                         stat = PlayerStats.query.filter_by(igg_id=igg_id).first()
                         if stat:
-                            l2 = gv(row, ['L2 (Hunt)', 'L2'])
-                            l3 = gv(row, ['L3 (Hunt)', 'L3'])
-                            l4 = gv(row, ['L4 (Hunt)', 'L4'])
-                            l5 = gv(row, ['L5 (Hunt)', 'L5'])
-                            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 8)
+                            l2 = int(get_val_local(row, ['L2', 'L2 (Hunt)', 'Монстри L2']))
+                            l3 = int(get_val_local(row, ['L3', 'L3 (Hunt)', 'Монстри L3']))
+                            l4 = int(get_val_local(row, ['L4', 'L4 (Hunt)', 'Монстри L4']))
+                            l5 = int(get_val_local(row, ['L5', 'L5 (Hunt)', 'Монстри L5']))
+
+                            points = (l2 * 1) + (l3 * 3) + (l4 * 8) + (l5 * 10)
                             diff = points - GOAL
 
-                            # ВІДКАТ БОРГУ
-                            if diff < 0:
-                                stat.monster_debt -= abs(diff)
-                            else:
+                            # Відкат боргу (навпаки до нарахування)
+                            if diff >= 0:
                                 stat.monster_debt += diff
+                            else:
+                                stat.monster_debt -= abs(diff)
+
                             if stat.monster_debt < 0: stat.monster_debt = 0
 
+                    db.session.commit()
                     del df
                     gc.collect()
                 except Exception as e:
-                    print(f"ПОМИЛКА ВІДКАТУ МОНСТРІВ: {e}")
+                    print(f"DEBUG: Помилка відкату боргу: {e}")
 
-            # Скидаємо бали за поточний тиждень
-            PlayerStats.query.update({
-                PlayerStats.hunt_points: 0, PlayerStats.hunt_l1: 0,
-                PlayerStats.hunt_l2: 0, PlayerStats.hunt_l3: 0,
-                PlayerStats.hunt_l4: 0, PlayerStats.hunt_l5: 0
-            })
+            # Видаляємо лог перед тим, як шукати попередній
+            db.session.delete(log)
+            db.session.commit()
+
+            # 🔥 ІНТЕЛЕКТУАЛЬНИЙ ВІДКАТ ДО ПОПЕРЕДНЬОГО ФАЙЛУ
+            # Шукаємо останній доступний файл монстрів, який тепер став "новим"
+            remaining_logs = UploadLog.query.filter_by(upload_type='monsters').order_by(UploadLog.id.desc()).all()
+
+            if not remaining_logs:
+                # Якщо файлів не залишилося — повне обнулення
+                PlayerStats.query.update({
+                    'hunt_points': 0, 'hunt_l1': 0, 'hunt_l2': 0, 'hunt_l3': 0, 'hunt_l4': 0, 'hunt_l5': 0,
+                    'last_hunt_points': 0, 'last_hunt_l1': 0, 'last_hunt_l2': 0, 'last_hunt_l3': 0, 'last_hunt_l4': 0,
+                    'last_hunt_l5': 0,
+                    'monster_debt': 0
+                })
+                print("DEBUG: Усі логи монстрів видалено. Дані очищено.")
+            else:
+                # Якщо є попередній файл — він тепер має стати у вкладку "Минулий тиждень"
+                # А поточні бали просто обнуляємо, щоб адмін завантажив актуальний тиждень
+                PlayerStats.query.update({
+                    'hunt_points': 0, 'hunt_l1': 0, 'hunt_l2': 0, 'hunt_l3': 0, 'hunt_l4': 0, 'hunt_l5': 0
+                })
+                # Також можна додати логіку автоматичного зчитування 'remaining_logs[0]' у 'last_hunt_...'
+                # Але оскільки завантаження і так зміщує дані, сайт покаже попередній файл автоматично у вкладці "Минулий"
+
+            db.session.commit()
 
         # --- 2. ВІДКАТ ДАНИХ ДЛЯ КІЛІВ/МІЦІ (GENERAL) ---
         elif log.upload_type == 'general':
-            # Визначаємо дату, яку треба видалити з історії
-            if log.period == 'past':
-                record_date = date.today() - timedelta(days=7)
-            else:
-                record_date = date.today()
-
-            # Видаляємо записи з PlayerHistory за цю дату
+            record_date = date.today() - timedelta(days=7) if log.period == 'past' else date.today()
             PlayerHistory.query.filter_by(recorded_at=record_date).delete()
 
-            # Якщо видаляємо "НОВИЙ" файл, повертаємо поточні показники до стартових
             if log.period == 'new':
                 players = PlayerStats.query.all()
                 for stat in players:
@@ -849,18 +839,16 @@ def delete_upload_api():
                     stat.might_diff = 0
                     stat.kills_diff = 0
 
+            db.session.delete(log)
+            db.session.commit()
+
         # --- 3. ФІЗИЧНЕ ВИДАЛЕННЯ ФАЙЛУ ---
         if os.path.exists(file_path):
             try:
-                gc.collect()  # Примусово звільняємо ресурси перед видаленням
+                gc.collect()
                 os.remove(file_path)
-                print("DEBUG: Файл успішно видалено.")
             except Exception as e:
-                print(f"DEBUG: Не вдалося видалити файл (зайнятий): {e}")
-
-        # --- 4. ВИДАЛЕННЯ З БАЗИ ---
-        db.session.delete(log)
-        db.session.commit()
+                print(f"DEBUG: Не вдалося видалити файл: {e}")
 
         return jsonify({'message': f'Запис {log.upload_type} видалено, дані відкочено!'})
 
