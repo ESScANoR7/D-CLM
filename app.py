@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 app.secret_key = "D*CLM_PAS_NO_77_99"
 
-from datetime import timedelta
+
 
 app.permanent_session_lifetime = timedelta(days=7) # Сесія буде жити 7 днів
 
@@ -626,8 +626,7 @@ def upload_general_stats():
             UploadLog(filename=filename, upload_type='general', period=period, admin_name=session.get('nickname')))
 
         df = pd.read_excel(file_path)
-        # Очищаємо назви колонок: видаляємо пробіли та переводимо в нижній регістр для перевірки
-        df.columns = [str(col).strip() for col in df.columns]
+        df.columns = df.columns.str.strip()
         count = 0
 
         def safe_int(val):
@@ -637,23 +636,16 @@ def upload_general_stats():
             except:
                 return 0
 
-        # Функція для гнучкого пошуку значення в рядку за списком можливих назв колонок
-        def get_value_flexible(row, possible_names):
-            for col in df.columns:
-                if col.lower() in [name.lower() for name in possible_names]:
-                    val = row[col]
-                    return val if pd.notnull(val) else None
-            return None
-
+        # 🔥 ВИЗНАЧАЄМО ДАТУ ДЛЯ ГРАФІКА
         if period == 'past':
+            # Якщо це старий файл - записуємо його датою "тиждень тому"
             record_date = date.today() - timedelta(days=7)
         else:
+            # Якщо новий - сьогоднішньою
             record_date = date.today()
 
         for _, row in df.iterrows():
-            # Гнучкий пошук IGG ID
-            raw_igg = get_value_flexible(row, ['IGG ID', 'User ID', 'ID', 'iggid'])
-            if raw_igg is None: continue
+            raw_igg = row.get('IGG ID') or row.get('User ID') or row.get('ID')
             igg_id = "".join(filter(str.isdigit, str(raw_igg)))
             if not igg_id: continue
 
@@ -662,19 +654,13 @@ def upload_general_stats():
                 stat = PlayerStats(igg_id=igg_id)
                 db.session.add(stat)
 
-            # 🔥 ПРАВКА ТУТ: Гнучкий пошук імені
-            name = get_value_flexible(row, ['Name', 'Nickname', 'Нік', 'Никнейм', 'Нікнейм'])
-            if name:
-                stat.nickname = str(name).strip()
-            # Якщо ім'я не знайдено, але гравець вже зареєстрований — спробуємо взяти з таблиці User
-            elif not stat.nickname:
-                registered_user = User.query.filter_by(igg_id=igg_id).first()
-                if registered_user:
-                    stat.nickname = registered_user.nickname
+            name = row.get('Name') or row.get('Nickname')
+            if name: stat.nickname = str(name)
 
-            val_might = safe_int(get_value_flexible(row, ['Might', 'Міць', 'Power', 'Сила']))
-            val_kills = safe_int(get_value_flexible(row, ['Kills', 'Вбивства', 'Kill Count', 'Убийства']))
+            val_might = safe_int(row.get('Might') or row.get('Міць') or row.get('Power'))
+            val_kills = safe_int(row.get('Kills') or row.get('Вбивства') or row.get('Kill Count'))
 
+            # 1. Оновлюємо поточну статистику (для таблиці)
             if period == 'new':
                 stat.might_current = val_might
                 stat.kills_current = val_kills
@@ -682,7 +668,9 @@ def upload_general_stats():
                 stat.might_start = val_might
                 stat.kills_start = val_kills
 
+            # 2. Оновлюємо історію (для графіка) з ПРАВИЛЬНОЮ датою
             history = PlayerHistory.query.filter_by(igg_id=igg_id, recorded_at=record_date).first()
+
             if not history:
                 history = PlayerHistory(igg_id=igg_id, recorded_at=record_date)
                 db.session.add(history)
@@ -690,15 +678,15 @@ def upload_general_stats():
             history.might = val_might
             history.kills = val_kills
 
+            # 3. Перераховуємо різницю
             stat.might_diff = (stat.might_current or 0) - (stat.might_start or 0)
             stat.kills_diff = (stat.kills_current or 0) - (stat.kills_start or 0)
 
             count += 1
 
         db.session.commit()
-        return jsonify({'message': f'Успішно оновлено {count} гравців. Ніки відновлено!'})
+        return jsonify({'message': f'General ({period}): Оновлено {count} гравців. Дата історії: {record_date}'})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 # ==========================================
 # 🔥 РОЗУМНЕ ВИДАЛЕННЯ (ROLLBACK)
@@ -1048,5 +1036,4 @@ def save_player_kvk_stats_api():
 
 
 if __name__ == '__main__':
-    with app.app_context(): db.create_all()
     app.run(debug=True, port=5000)
