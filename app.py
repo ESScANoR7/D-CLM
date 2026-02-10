@@ -11,7 +11,8 @@ import gc  # Garbage Collector для примусового закриття ф
 
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+
+app.secret_key = "D*CLM_PAS_NO_77_99"
 
 from datetime import timedelta
 
@@ -229,67 +230,26 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
         session.clear()
+
+        # 🔥 Цей рядок активує термін дії на 7 днів
         session.permanent = True
+
         session.update({
             'user_id': user.id,
             'nickname': user.nickname,
             'role': user.role
         })
 
-        # Якщо все ОК і це AJAX - шлемо редірект у JSON
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({"redirect": url_for('dashboard')}), 200
         return redirect(url_for('dashboard'))
 
-    # ЯКЩО ПОМИЛКА:
     error_msg = "❌ Невірний нікнейм або пароль!"
-
-    # Якщо запит від JS - повертаємо JSON помилку
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({"error": error_msg}), 401
 
-    # Якщо звичайна форма - шлемо Flash
     flash(error_msg, "login_error")
     return redirect(url_for('index'))
-@app.route('/register_player', methods=['POST'])
-def register_player():
-    nickname = request.form.get('nickname')
-    password = request.form.get('password')
-    igg_id = request.form.get('igg_id')
-    entered_code = request.form.get('guild_code')
-
-    # 1. Перевірка Коду Гільдії
-    config = GuildConfig.query.get(1)
-    real_code = config.guild_pass if config else "1234"
-
-    if entered_code != real_code:
-        # Повертаємо JSON помилку для JavaScript
-        return jsonify({"error": "❌ НЕВІРНИЙ КОД ГІЛЬДІЇ! Запитайте код у R4/R5."}), 403
-
-    # 2. Перевірка нікнейму
-    if User.query.filter_by(nickname=nickname).first():
-        return jsonify({"error": "Цей нікнейм вже зайнятий!"}), 400
-
-    try:
-        # 3. Створення користувача
-        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(nickname=nickname, password_hash=hashed_pw, igg_id=igg_id, role='player')
-
-        db.session.add(new_user)
-        db.session.commit()
-
-        session.clear()  # Рекомендую очистити стару сесію перед новою
-        session.permanent = True
-
-        # 4. Авторизація
-        session.update({'user_id': new_user.id, 'nickname': new_user.nickname, 'role': 'player'})
-
-        # 5. ВАЖЛИВО: повертаємо JSON з посиланням на дашборд
-        return jsonify({"redirect": url_for('dashboard')}), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Помилка бази даних"}), 500
 @app.route('/logout')
 def logout():
     session.clear()
