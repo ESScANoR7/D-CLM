@@ -211,6 +211,38 @@ def register_guest():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Помилка бази даних"}), 500
+
+
+with app.app_context():
+    db.create_all()
+
+    from sqlalchemy import text
+
+    try:
+        # Очищаємо ТІЛЬКИ монстрів, борги та загальну статистику (кіли/міць)
+        db.session.execute(text("""
+            UPDATE player_stats 
+            SET 
+                -- Обнуляємо монстрів
+                hunt_l1 = 0, hunt_l2 = 0, hunt_l3 = 0, hunt_l4 = 0, hunt_l5 = 0, 
+                hunt_points = 0, monster_debt = 0,
+                last_hunt_l1 = 0, last_hunt_l2 = 0, last_hunt_l3 = 0, last_hunt_l4 = 0, last_hunt_l5 = 0, 
+                last_hunt_points = 0,
+
+                -- Обнуляємо загальну статку (кіли/міць)
+                might_start = 0, might_current = 0, might_diff = 0,
+                kills_start = 0, kills_current = 0, kills_diff = 0
+        """))
+
+        # Видаляємо історію для графіків та логи завантажень
+        db.session.execute(text("DELETE FROM player_history"))
+        db.session.execute(text("DELETE FROM upload_log"))
+
+        db.session.commit()
+        print("✅ Очищено монстрів та кіли. Арена та КВК збережені!")
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Помилка: {e}")
 @app.route('/guest_reg')
 def guest_reg():
     return render_template('guest.html')
