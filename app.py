@@ -217,6 +217,49 @@ def register_guest():
 def guest_reg():
     return render_template('guest.html')
 
+@app.route('/register_player', methods=['POST'])
+def register_player():
+    nickname = request.form.get('nickname')
+    password = request.form.get('password')
+    igg_id = request.form.get('igg_id')
+    entered_code = request.form.get('guild_code')
+
+    # 1. Перевірка Коду Гільдії
+    config = GuildConfig.query.get(1)
+    real_code = config.guild_pass if config else "1234"
+
+    if entered_code != real_code:
+        return jsonify({"error": "❌ НЕВІРНИЙ КОД ГІЛЬДІЇ! Запитайте код у R4/R5."}), 403
+
+    # 2. Перевірка нікнейму
+    if User.query.filter_by(nickname=nickname).first():
+        return jsonify({"error": "Цей нікнейм вже зайнятий!"}), 400
+
+    try:
+        # 3. Створення користувача
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(nickname=nickname, password_hash=hashed_pw, igg_id=igg_id, role='player')
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        # 4. 🔥 Оновлена Авторизація (7 днів збереження сесії)
+        session.clear()
+        session.permanent = True
+        session.update({
+            'user_id': new_user.id,
+            'nickname': new_user.nickname,
+            'role': 'player'
+        })
+
+        # 5. Повертаємо JSON з посиланням на дашборд
+        return jsonify({"redirect": url_for('dashboard')}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        # 🔥 Додаємо вивід помилки в консоль для діагностики на Render
+        print(f"❌ ПОМИЛКА РЕЄСТРАЦІЇ: {e}")
+        return jsonify({"error": f"Помилка бази даних: {str(e)}"}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -231,7 +274,7 @@ def login():
     if user and bcrypt.check_password_hash(user.password_hash, password):
         session.clear()
 
-        # 🔥 Цей рядок активує термін дії на 7 днів
+
         session.permanent = True
 
         session.update({
